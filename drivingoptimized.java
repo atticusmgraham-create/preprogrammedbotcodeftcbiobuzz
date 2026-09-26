@@ -1,4 +1,5 @@
 //add high pass filter
+//find velocity with encoders and acceleration use f=1/2pi(sqrt(acceleration/position)) where position cannot equal zero
 package org.firstinspires.ftc.teamcode;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
