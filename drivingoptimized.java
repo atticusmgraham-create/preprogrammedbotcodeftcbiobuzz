@@ -28,9 +28,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "BioBuzz StarterBot Teleop", group = "StarterBot")
+@TeleOp(name = "DrivingOptimized", group = "StarterBot")
 //@Disabled
-public class BioBuzzStarterbotTeleop extends OpMode {
+public class DrivingOptimized extends OpMode {
 
     // Declare OpMode members.
     private DcMotor leftDrive = null;
@@ -59,14 +59,14 @@ public class BioBuzzStarterbotTeleop extends OpMode {
      * choose to declare these variables inside the arcadeDrive() function, instead we declare them
      * here so that we can access them in our main loop for telemetry.
      */
-    double leftPower;
-    double rightPower;
+    double leftPower=0;
+    double rightPower=0;
     double y=0;
     double x=0;
     double d=0.2;
 
     // Create a variable to set to the intake.
-    double intakePower;
+    double intakePower=0;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -179,18 +179,18 @@ public class BioBuzzStarterbotTeleop extends OpMode {
         }
         if (gamepad2.right_bumper) {
           double precision=1-gamepad2.left_trigger; 
-          y=precision*y
-          x=precision*x
+          y=precision*y;
+          x=precision*x;
         }
         if (gamepad2.left_bumper) {
           double precision=0.3-(gamepad2.left_trigger*0.3);
-          y=precision*y
-          x=precision*x
+          y=precision*y;
+          x=precision*x;
         }
         if(!gamepad2.left_bumper && !gamepad2.right_bumper){
           double precision=0.6-(gamepad2.left_trigger*0.6);  
-          y=precision*y
-          x=precision*x
+          y=precision*y;
+          x=precision*x;
         if(!gamepad2.a && !gamepad2.b){
           arcadeDrive(-y, x);
         }
@@ -244,9 +244,6 @@ public class BioBuzzStarterbotTeleop extends OpMode {
     /*
      * Code to run ONCE after the driver hits STOP
      */
-    @Override
-    public void stop() {
-    }
 
     void arcadeDrive(double forward, double rotate) {
         leftPower = forward + rotate;
@@ -266,7 +263,7 @@ public class BioBuzzStarterbotTeleop extends OpMode {
         leftDrive.setZeroPowerBehavior(BRAKE);
         rightDrive.setZeroPowerBehavior(BRAKE);
     }
-    void launch() {
+    void launch(){
         /*
          * Calling gamepad1.right_bumper returns a boolean which will be true if the bumper is
          * held down, and false if it is not. Notably, this will continue to be true for every
@@ -276,9 +273,9 @@ public class BioBuzzStarterbotTeleop extends OpMode {
          * Otherwise, we start spinning the launcher down.
          */
         if (gamepad1.right_bumper) {
-            launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            launch.setVelocity(LAUNCHER_TARGET_VELOCITY);
         } else {
-            launcher.setVelocity(0);
+            launch.setVelocity(0);
         }
 
         /*
