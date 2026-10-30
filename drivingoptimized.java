@@ -33,8 +33,8 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class DrivingOptimized extends OpMode {
 
     // Declare OpMode members.
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
+    private DcMotor leftdrive = null;
+    private DcMotor rightdrive = null;
     private DcMotorEx launcher = null;
     private DcMotor intake = null;
     private CRServo leftIntakeServo = null;
@@ -79,8 +79,8 @@ public class DrivingOptimized extends OpMode {
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
-        leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        leftdrive = hardwareMap.get(DcMotor.class, "leftdrive");
+        rightdrive = hardwareMap.get(DcMotor.class, "rightdrive");
         intake = hardwareMap.get(DcMotor.class, "intake");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
         windmillServo = hardwareMap.get(CRServo.class, "windmill");
