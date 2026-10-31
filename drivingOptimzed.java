@@ -1,7 +1,29 @@
+/*   MIT License
+ *   Copyright (c) [2026] [Base 10 Assets, LLC]
+ *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy
+ *   of this software and associated documentation files (the "Software"), to deal
+ *   in the Software without restriction, including without limitation the rights
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *   copies of the Software, and to permit persons to whom the Software is
+ *   furnished to do so, subject to the following conditions:
+
+ *   The above copyright notice and this permission notice shall be included in all
+ *   copies or substantial portions of the Software.
+
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *   SOFTWARE.
+ */
+
+
 package org.firstinspires.ftc.teamcode;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
-import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.FLOAT;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -11,11 +33,27 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+
+/*
+ * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
+ * 2026-2027 FIRST® Tech Challenge. It leverages a differential/Skid-Steer system for robot mobility,
+ * one motor driving an intake roller, two servos which pull elements out of corners, and a high-speed
+ * launcher motor.
+ *
+ * Likely the most niche concept we'll use in this example is closed-loop motor velocity control.
+ * This control method reads the current speed as reported by the motor's encoder and applies a varying
+ * amount of power to reach, and then hold a target velocity. The FTC SDK calls this control method
+ * "RUN_USING_ENCODER". This contrasts to the default "RUN_WITHOUT_ENCODER" where you control the power
+ * applied to the motor directly.
+ * Since the dynamics of a launcher wheel system varies greatly from those of most other FTC mechanisms,
+ * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
+ */
+
 @TeleOp(name = "DrivingOptimized", group = "StarterBot")
 //@Disabled
 public class DrivingOptimized extends OpMode {
 
-    // Hardware (names fixed to camelCase so they match everywhere they're used)
+    // Declare OpMode members.
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
     private DcMotorEx launcher = null;
@@ -24,143 +62,209 @@ public class DrivingOptimized extends OpMode {
     private CRServo rightIntakeServo = null;
     private CRServo windmillServo = null;
 
-    // Launcher velocities in encoder ticks per second
+    /*
+     * These two variables are used to control the velocity of the launcher motor.
+     * They are both in encoder ticks per second. The motors we use in the FIRST Tech Challenge
+     * have encoders with a resolution of 28 ticks per revolution. We can convert this to RPM
+     * by dividing the value by 28, to get to revolutions per second, before multiplying by 60
+     * to get revolutions per minute.
+     * We pass the target velocity variable to our motor to set the goal. We use the min velocity
+     * in the launch() function to only run the windmill servo when the motor is spinning fast
+     * enough to make a successful throw.
+     */
     public final int LAUNCHER_TARGET_VELOCITY = 1250;
     public final int LAUNCHER_MIN_VELOCITY = 1200;
 
-    double leftPower = 0;
-    double rightPower = 0;
-    double y = 0;
-    double x = 0;
-    final double DEADZONE = 0.2;
+    /*
+     * These two variables store the power we need to apply to the motors. In other cases, we may
+     * choose to declare these variables inside the arcadeDrive() function, instead we declare them
+     * here so that we can access them in our main loop for telemetry.
+     */
+    double leftPower;
+    double rightPower;
 
-    double intakePower = 0;
+    // Create a variable to set to the intake.
+    double intakePower;
 
+    /*
+     * Code to run ONCE when the driver hits INIT
+     */
     @Override
     public void init() {
-        // The strings here must match your Robot Configuration exactly
-        leftDrive = hardwareMap.get(DcMotor.class, "leftdrive");
-        rightDrive = hardwareMap.get(DcMotor.class, "rightdrive");
+
+        /*
+         * Initialize the hardware variables. Note that the strings used here as parameters
+         * to 'get' must correspond to the names assigned during the robot configuration
+         * step.
+         */
+        leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
+        rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
         intake = hardwareMap.get(DcMotor.class, "intake");
         launcher = hardwareMap.get(DcMotorEx.class, "launcher");
         windmillServo = hardwareMap.get(CRServo.class, "windmill");
         leftIntakeServo = hardwareMap.get(CRServo.class, "left_intake_servo");
         rightIntakeServo = hardwareMap.get(CRServo.class, "right_intake_servo");
 
+        /*
+         * To drive forward, most robots need the motor on one side to be reversed,
+         * because the axles point in opposite directions. Pushing the left stick forward
+         * MUST make robot go forward. So adjust these two lines based on your first test drive.
+         * Note: The settings here assume direct drive on left and right wheels. Gear
+         * Reduction or 90 Deg drives may require direction flips
+         */
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
+        /*
+         * Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to
+         * slow down much faster when it is coasting. This creates a much more controllable
+         * drivetrain. As the robot stops much quicker.
+         */
         leftDrive.setZeroPowerBehavior(BRAKE);
         rightDrive.setZeroPowerBehavior(BRAKE);
-        intake.setZeroPowerBehavior(BRAKE);
+        
 
+        /*
+         * Here we set our launcher to the RUN_USING_ENCODER runmode.
+         * If you notice that you have no control over the velocity of the motor, it just jumps
+         * right to a number much higher than your set point, make sure that your encoders are plugged
+         * into the port right beside the motor itself. And that the motors polarity is consistent
+         * through any wiring.
+         */
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,
-                new PIDFCoefficients(40, 0, 0, 12.5));
 
-        rightIntakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
-        windmillServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(40, 0, 0, 12.5));
 
+        /*
+         * set Feeders to an initial value to initialize the servo controller
+         */
         leftIntakeServo.setPower(0);
         rightIntakeServo.setPower(0);
         windmillServo.setPower(0);
 
+        /*
+         * Much like our drivetrain motors, we set the right intake servo to reverse so that both
+         * servos work to pull elements into the intake.
+         */
+        rightIntakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        windmillServo.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        /*
+         * Tell the driver that initialization is complete.
+         */
         telemetry.addData("Status", "Initialized");
     }
 
+    /*
+     * Code to run REPEATEDLY after the driver hits INIT, but before they hit START
+     */
     @Override
     public void init_loop() {
     }
 
+    /*
+     * Code to run ONCE when the driver hits START
+     */
     @Override
     public void start() {
     }
 
+    /*
+     * Code to run REPEATEDLY after the driver hits START but before they hit STOP
+     */
     @Override
     public void loop() {
-        // ---- Drive inputs: deadzone + cubic curve ----
-        y = shape(gamepad2.left_stick_y);
-        x = shape(gamepad2.right_stick_x);
+        
+        /*
+         * Here we call a function called arcadeDrive. The arcadeDrive function takes the input from
+         * the joysticks, and applies power to the left and right drive motor to move the robot
+         * as requested by the driver. "arcade" refers to the control style we're using here.
+         * Much like a classic arcade game, when you move the left joystick forward both motors
+         * work to drive the robot forward, and when you move the right joystick left and right
+         * both motors work to rotate the robot. Combinations of these inputs can be used to create
+         * more complex maneuvers.
+         */
+        arcadeDrive(gamepad1.left_stick_y, -gamepad1.right_stick_x);
 
-        // ---- Speed scaling (else-if so bumpers can't stack) ----
-        double precision;
-        if (gamepad2.right_bumper) {
-            precision = 1 - gamepad2.left_trigger;
-        } else if (gamepad2.left_bumper) {
-            precision = 0.3 * (1 - gamepad2.left_trigger);
-        } else {
-            precision = 0.6 * (1 - gamepad2.left_trigger);
-        }
-        y *= precision;
-        x *= precision;
-
-        // ---- Brake / float: hold B to coast, otherwise brake ----
-        if (gamepad2.b) {
-            floatMode();
-        } else {
-            brakeMode();
-        }
-
-        // Always drive every loop. (Before, the motors were left at their
-        // last power whenever A or B was held.)
-        arcadeDrive(-y, x);
-
-        // ---- Intake ----
+        /*
+         * Set the intake power variable to equal the right trigger, minus the left trigger.
+         * Each trigger outputs a signal from 0-1, with 0 as fully released, and 1 fully depressed.
+         * This gives us proportional control of the intake speed. The speed increases as we pull
+         * the right trigger further. It's occasionally helpful to be able to reverse the intake,
+         * so we also factor in the left trigger. If the left trigger is fully depressed,
+         * the intakePower variable will be -1. If the right trigger is fully depressed, the variable
+         * will be 1. If the driver pulls both triggers, the intake will remain off.
+         * We use this technique (creating a variable, and setting it to our control inputs) to
+         * allow us to avoid setting the same motors/servos power more than once per loop. That can
+         * create erratic behavior.
+         */
         intakePower = gamepad1.right_trigger - gamepad1.left_trigger;
 
-        // launch() may modify intakePower, so call it BEFORE writing to hardware
+        /*
+         * The launch() function handles setting motor velocity, and running the windmill servo
+         * to feed the elements into the launcher wheel.
+         */
         launch();
 
+        /*
+         * Here we set our intake motor and servos to their intake power. The order of operations
+         * here is important though. The gamepad triggers define the starting point for the intake
+         * power variable in each loop of oujr code, but inside our launch function we also sometimes
+         * change the intake power. So we need to give our launch function a chance to modify the
+         * variable before we write it to our motor and servos.
+         */
         intake.setPower(intakePower);
         leftIntakeServo.setPower(intakePower);
         rightIntakeServo.setPower(intakePower);
 
-        // ---- Telemetry ----
+        /*
+         * Show motor powers on the Driver Station via telemetry.
+         */
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-        telemetry.addData("Launcher velocity", "%.0f", launcher.getVelocity());
-        telemetry.update();
+        telemetry.addLine();
+
     }
 
-    /** Applies deadzone, then cubes the input (cubing keeps the sign). */
-    private double shape(double v) {
-        if (Math.abs(v) < DEADZONE) {
-            return 0;
-        }
-        return v * v * v;
+    /*
+     * Code to run ONCE after the driver hits STOP
+     */
+    @Override
+    public void stop() {
     }
 
     void arcadeDrive(double forward, double rotate) {
         leftPower = forward + rotate;
         rightPower = forward - rotate;
 
-        // Keep powers within [-1, 1] without changing the turn ratio
-        double max = Math.max(Math.abs(leftPower), Math.abs(rightPower));
-        if (max > 1.0) {
-            leftPower /= max;
-            rightPower /= max;
-        }
-
+        /*
+         * Send calculated power to motors
+         */
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
     }
 
-    void brakeMode() {
-        leftDrive.setZeroPowerBehavior(BRAKE);
-        rightDrive.setZeroPowerBehavior(BRAKE);
-    }
-
-    void floatMode() {
-        leftDrive.setZeroPowerBehavior(FLOAT);
-        rightDrive.setZeroPowerBehavior(FLOAT);
-    }
-
     void launch() {
+        /*
+         * Calling gamepad1.right_bumper returns a boolean which will be true if the bumper is
+         * held down, and false if it is not. Notably, this will continue to be true for every
+         * cycle of our code that the driver holds down that bumper.
+         * The first step of our launch() function is checking to see if the user is currently
+         * holding down the right gamepad. If they are, then we want to start spinning up the launcher.
+         * Otherwise, we start spinning the launcher down.
+         */
         if (gamepad1.right_bumper) {
             launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
         } else {
             launcher.setVelocity(0);
-        }
+            }
 
+        /*
+         * Here we ask if the driver is currently pressing the right bumper, AND the launcher is
+         * spinning fast enough to make a successful shot. If it is, then we will turn on the
+         * windmill servo to start feeding the elements into the launcher motor. We also
+         * add some power to the intake power. This can sometimes help dislodge stuck elements from
+         * inside the hopper.
+         */
         if (gamepad1.right_bumper && launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
             windmillServo.setPower(1);
             intakePower += 0.5;
@@ -168,4 +272,6 @@ public class DrivingOptimized extends OpMode {
             windmillServo.setPower(0);
         }
     }
+
+
 }
