@@ -268,8 +268,6 @@ public class DrivingOptimized extends OpMode {
         if (gamepad1.right_bumper && launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
             windmillServo.setPower(1);
             intakePower += 0.5;
-        } else {
-            windmillServo.setPower(0);
         }
     }
 
