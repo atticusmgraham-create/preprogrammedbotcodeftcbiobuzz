@@ -184,7 +184,7 @@ public class DrivingOptimized extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        arcadeDrive(gamepad1.left_stick_y, -(gamepad1.right_trigger - gamepad1.left_trigger));
+        arcadeDrive(gamepad1.left_stick_y, -gamepad1.left_trigger-gamepad1.right_trigger);
 
         /*
          * Set the intake power variable to equal the right trigger, minus the left trigger.
@@ -198,7 +198,7 @@ public class DrivingOptimized extends OpMode {
          * allow us to avoid setting the same motors/servos power more than once per loop. That can
          * create erratic behavior.
          */
-        intakePower = gamepad1.right_trigger - gamepad1.left_trigger;
+        intakePower = gamepad1.right_stick_x-gamepad1.right_stick_y;
 
         /*
          * The launch() function handles setting motor velocity, and running the windmill servo
@@ -216,7 +216,7 @@ public class DrivingOptimized extends OpMode {
         intake.setPower(intakePower);
         leftIntakeServo.setPower(intakePower);
         rightIntakeServo.setPower(intakePower);
-
+        windmillServo.setPower(intakePower);
         /*
          * Show motor powers on the Driver Station via telemetry.
          */
@@ -265,11 +265,18 @@ public class DrivingOptimized extends OpMode {
          * add some power to the intake power. This can sometimes help dislodge stuck elements from
          * inside the hopper.
          */
-        if (gamepad1.right_bumper && launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-            windmillServo.setPower(1);
+    
+        if (gamepad1.right_bumper && launcher.getVelocity() > LAUNCHER_MIN_VELOCITY)
+        {
             intakePower += 0.5;
+        } else {
+            windmillServo.setPower(0);
         }
     }
 
 
 }
+
+
+
+
