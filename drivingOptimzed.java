@@ -184,7 +184,7 @@ public class DrivingOptimized extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        arcadeDrive(gamepad1.left_stick_y, -gamepad1.left_trigger-gamepad1.right_trigger);
+        arcadeDrive(gamepad1.left_stick_y, gamepad1.left_trigger-gamepad1.right_trigger);
 
         /*
          * Set the intake power variable to equal the right trigger, minus the left trigger.
