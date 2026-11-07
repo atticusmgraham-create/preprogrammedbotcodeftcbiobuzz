@@ -216,8 +216,16 @@ public class THEteleop extends OpMode {
         intake.setPower(intakePower);
         leftIntakeServo.setPower(intakePower);
         rightIntakeServo.setPower(intakePower);
-        windmillServo.setPower(intakePower);
-        /*
+        if(gamepad1.y){
+           windmillServo.setPower(1);
+        }
+        if(gamepad1.x){
+            windmillServo.setPower(-1);
+
+        }
+    
+        
+            /*
          * Show motor powers on the Driver Station via telemetry.
          */
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
