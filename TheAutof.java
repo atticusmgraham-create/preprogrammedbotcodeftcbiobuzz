@@ -21,7 +21,7 @@ public class TheAuto extends OpMode
 {        
         private ElapsedTime timer= new ElapsedTime();
         public final int LAUNCHER_TARGET_VELOCITY = 1250;
-        public final int LAUNCHER_MIN_VELOCITY = 1200-67;
+        public final int LAUNCHER_MIN_VELOCITY = 1200;
         private DcMotor leftDrive = null;
         private DcMotor rightDrive = null;
         private DcMotorEx launcher = null;
@@ -33,7 +33,7 @@ public class TheAuto extends OpMode
         final double Kd = 0.02349;
         final double A  = 0.002104;
         final double B  = 0.0186;
-        final double kS = 0.698; // 96 mm grip wheels on FTC foam tiles
+        final double kS = 0.5; // 96 mm grip wheels on FTC foam tiles
         static final double WHEEL_DIAMETER_M = 0.096; // 96 mm goBILDA wheels
         static final double TRACK_WIDTH_M = 0.398; // ~398 mm center-to-center wheel width
         static final double TURNING_RADIUS_M = TRACK_WIDTH_M / 2.0; // r = 0.199 m
@@ -55,9 +55,9 @@ public class TheAuto extends OpMode
         final double targetVelMps    = 0.0; // m/s (0.0 if driving to a stationary point)
         final double targetAccelMps2 = 0.0; // m/s^2 (0.0 if driving to a stationary point)
         final double targetMetersA    = degreesToTurnMeters(180); // Drive 1.5 meters
-        final double targetVelMpsA    = 0.0; // m/s (0.0 if driving to a stationary point)
-        final double targetAccelMps2A = 0.0; // m/s^2 (0.0 if driving to a stationary point)
-        final double VELOCITY_THRESHOLD = 1e-4;
+        final double targetVelMpsA    = 2.02; // m/s (0.0 if driving to a stationary point)
+        final double targetAccelMps2A = 2.0; // m/s^2 (0.0 if driving to a stationary point)
+        final double VELOCITY_THRESHOLD = 1e-4; 
         final double POSITION_DEADBAND = 0.01 * METERS_TO_MOTOR_RAD;
         // Convert meter targets to bare-motor radians
         double targetThetaM     = targetMeters * METERS_TO_MOTOR_RAD;
@@ -66,16 +66,16 @@ public class TheAuto extends OpMode
         double targetThetaMA     = targetMetersA * METERS_TO_MOTOR_RAD;
         double targetThetaDotMA  = targetVelMpsA * METERS_TO_MOTOR_RAD;
         double targetThetaDDotMA = targetAccelMps2A * METERS_TO_MOTOR_RAD;
-        double motorpowerL=0.1;
-        double motorpowerR=0.1;
+        double motorpowerL=0.0;
+        double motorpowerR=0.0;
         double intakePower=0.0;
         double prevTicksL=0.0;
         double prevTicksR=0.0;
         double prevTime=0.0;
         double power=0.0;
   //start of moving
-       
-       
+        
+        
         // Apply kS in direction of motion (or error if stationary target, outside a small 0.01 m deadband)
 // Define a tiny threshold to account for floating-point inaccuracies
 
@@ -89,7 +89,7 @@ public class TheAuto extends OpMode
          */
          @Override
          public void init() {
-     
+      
               /*
                * Initialize the hardware variables. Note that the strings used here as parameters
                * to 'get' must correspond to the names assigned during the robot configuration
@@ -102,7 +102,7 @@ public class TheAuto extends OpMode
               windmillServo = hardwareMap.get(CRServo.class, "windmill");
               leftIntakeServo = hardwareMap.get(CRServo.class, "left_intake_servo");
               rightIntakeServo = hardwareMap.get(CRServo.class, "right_intake_servo");
-     
+      
               /*
                * To drive forward, most robots need the motor on one side to be reversed,
                * because the axles point in opposite directions. Pushing the left stick forward
@@ -120,7 +120,7 @@ public class TheAuto extends OpMode
                * drivetrain. As the robot stops much quicker.
                */
 
-     
+      
               /*
                * Here we set our launcher to the RUN_USING_ENCODER runmode.
                * If you notice that you have no control over the velocity of the motor, it just jumps
@@ -131,36 +131,36 @@ public class TheAuto extends OpMode
               leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
               rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
               launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-     
+      
               launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(40, 0, 0, 12.5));
-     
+      
               /*
                * set Feeders to an initial value to initialize the servo controller
                */
               leftIntakeServo.setPower(0);
               rightIntakeServo.setPower(0);
               windmillServo.setPower(0);
-     
+      
               /*
                * Much like our drivetrain motors, we set the right intake servo to reverse so that both
                * servos work to pull elements into the intake.
                */
               rightIntakeServo.setDirection(DcMotorSimple.Direction.REVERSE);
               windmillServo.setDirection(DcMotorSimple.Direction.REVERSE);
-     
+      
               /*
                * Tell the driver that initialization is complete.
                */
               telemetry.addData("Status", "Initialized");
           }
-     
+      
           /*
            * Code to run REPEATEDLY after the driver hits INIT, but before they hit START
            */
           @Override
           public void init_loop() {
           }
-     
+      
           /*
            * Code to run ONCE when the driver hits START
            */
@@ -194,10 +194,10 @@ public class TheAuto extends OpMode
             double errorDotR = targetThetaDotM - thetaDotMR;
             motorpowerL=drive(errorL,Kp,Kd,errorDotL,targetThetaDotM,B,batteryVoltage,A,targetThetaDDotM,kS,VELOCITY_THRESHOLD,POSITION_DEADBAND);
             motorpowerR=drive(errorR,Kp,Kd,errorDotR,targetThetaDotM,B,batteryVoltage,A,targetThetaDDotM,kS,VELOCITY_THRESHOLD,POSITION_DEADBAND);
-           
+            
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", motorpowerL, motorpowerR);
             if(currentTime<5){
-               
+                
                 leftDrive.setPower(-motorpowerL);
                 rightDrive.setPower(-motorpowerR);
             }
@@ -214,7 +214,7 @@ public class TheAuto extends OpMode
                 deltaTime = currentTime - prevTime;
                 manualVelocityL = deltaTicksL / deltaTime; // Ticks per second
                 manualVelocityR = deltaTicksR / deltaTime; // Ticks per second
-   
+    
             // 4. Read current state from DcMotorEx encoder
                 thetaML    = LcurrentTicks * TICKS_TO_MOTOR_RAD; // rad
                 thetaDotML = (manualVelocityL)* TICKS_TO_MOTOR_RAD;        // rad/s
@@ -229,13 +229,15 @@ public class TheAuto extends OpMode
                 double errorDotRA = targetThetaDotMA - thetaDotMR;
                 motorpowerL=drive(errorLA,Kp,Kd,errorDotLA,targetThetaDotMA,B,batteryVoltage,A,targetThetaDDotMA,kS,VELOCITY_THRESHOLD,POSITION_DEADBAND);
                 motorpowerR=drive(errorRA,Kp,Kd,errorDotRA,targetThetaDotMA,B,batteryVoltage,A,targetThetaDDotMA,kS,VELOCITY_THRESHOLD,POSITION_DEADBAND);
-               
+                
                 leftDrive.setPower(-motorpowerL);
                 rightDrive.setPower(motorpowerR);
-               
-           
+                
+            
               }
-            if(currentTime>11 && currentTime<19){
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
+            if(currentTime>11 && currentTime<20){
                 batteryVoltage = hardwareMap.voltageSensor.iterator().next().getVoltage();
                 LcurrentTicks = -leftDrive.getCurrentPosition();
                
@@ -245,7 +247,7 @@ public class TheAuto extends OpMode
                 deltaTime = currentTime - prevTime;
                 manualVelocityL = deltaTicksL / deltaTime; // Ticks per second
                 manualVelocityR = deltaTicksR / deltaTime; // Ticks per second
-   
+    
             // 4. Read current state from DcMotorEx encoder
                 thetaML    = LcurrentTicks * TICKS_TO_MOTOR_RAD; // rad
                 thetaDotML = (manualVelocityL)* TICKS_TO_MOTOR_RAD;        // rad/s
@@ -259,25 +261,25 @@ public class TheAuto extends OpMode
                 errorDotL = targetThetaDotM - thetaDotML;
                 errorR    = targetThetaM - thetaMR;
                 errorDotR = targetThetaDotM - thetaDotMR;
-                motorpowerL=drive(errorL,Kp,Kd,errorDotL,targetThetaDotM,B,batteryVoltage,A,targetThetaDDotM,kS,VELOCITY_THRESHOLD,POSITION_DEADBAND);
-                motorpowerR=drive(errorR,Kp,Kd,errorDotR,targetThetaDotM,B,batteryVoltage,A,targetThetaDDotM,kS,VELOCITY_THRESHOLD,POSITION_DEADBAND);
-               
+                motorpowerL=drive(errorL,Kp,Kd,errorDotL,targetThetaDotM,B,batteryVoltage,A,targetThetaDDotM,0.7,VELOCITY_THRESHOLD,2);
+                motorpowerR=drive(errorR,Kp,Kd,errorDotR,targetThetaDotM,B,batteryVoltage,A,targetThetaDDotM,0.7,VELOCITY_THRESHOLD,2);
+                
                 telemetry.addData("Motors", "left (%.2f), right (%.2f)", motorpowerL, motorpowerR);
-           
-               
+            
+                
                 leftDrive.setPower(-motorpowerL);
-                rightDrive.setPower(-motorpowerR);
+                rightDrive.setPower(motorpowerR);
             }
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
-            if(currentTime>19 && currentTime<28){
+            //leftDrive.setPower(0);
+            //rightDrive.setPower(0);
+            if(currentTime>20 && currentTime<28){
                 rightIntakeServo.setPower(1);
                 launch();
             }
             if(currentTime>28){
                 donothing();  
             }
-          }
+          } 
           @Override
           public void stop() {
           }
@@ -300,22 +302,26 @@ public class TheAuto extends OpMode
           }
           double drive(double er,double h,double d,double ed,double TTDM,double Bye,double bv,double As,double TTDDM,double kSp,double VT,double PD){
               double direction = 0.0;
-
+              double powerd=power;
               if (Math.abs(TTDM) > VT) {
                 direction = Math.signum(TTDM);
               } else if (Math.abs(er) > PD) {
                 direction = Math.signum(er);
               }
 
-       
+        
               double vFeedback    = (h * er) + (d * ed);
               double vFeedforward = (As * TTDDM) + (Bye * TTDM) + (kSp * direction);
               double vTotal       = vFeedback + vFeedforward;
-       
+        
         // 6. Normalize to [-1.0, 1.0] motor power using live battery voltage
-             
+              
               double power = Math.max(-1.0, Math.min(1.0, vTotal / bv));
-       
+              
+              if (Double.isNaN(power)){
+                  power=powerd;
+              }
+              powerd=power;
               return power;
           }
           double donothing(){
@@ -331,7 +337,7 @@ public class TheAuto extends OpMode
 // --- MOTOR CONSTANTS (312 RPM Yellow Jacket) ---
                 double TICKS_PER_REV = 537.7;
                 double WHEEL_CIRCUMFERENCE_M = Math.PI * WHEEL_DIAMETER_M;
-               
+                
 
 // --- SCRUB TUNING MULTIPLIER ---
 // Start at 1.0. If the bot turns 320 deg when commanded 360 deg, set to (360.0 / 320.0) = 1.125
