@@ -207,11 +207,11 @@ public class TheAuto extends OpMode
 
                 batteryVoltage = hardwareMap.voltageSensor.iterator().next().getVoltage();
                 LcurrentTicks = -leftDrive.getCurrentPosition();
-                currentTime = timer.seconds();
+                //currentTime = timer.seconds();
                 RcurrentTicks = -rightDrive.getCurrentPosition();
                 deltaTicksR = RcurrentTicks - prevTicksR;
                 deltaTicksL = LcurrentTicks - prevTicksL;
-                deltaTime = currentTime - prevTime;
+                //deltaTime = currentTime - prevTime;
                 manualVelocityL = deltaTicksL / deltaTime; // Ticks per second
                 manualVelocityR = deltaTicksR / deltaTime; // Ticks per second
     
@@ -222,7 +222,7 @@ public class TheAuto extends OpMode
                 thetaDotMR = (manualVelocityR)* TICKS_TO_MOTOR_RAD;    
                 prevTicksL = LcurrentTicks;
                 prevTicksR = RcurrentTicks;
-                prevTime = currentTime;
+                //prevTime = currentTime;
                 double errorLA    = targetThetaMA - thetaML;
                 double errorDotLA = targetThetaDotMA - thetaDotML;
                 double errorRA    = targetThetaMA - thetaMR;
@@ -244,7 +244,7 @@ public class TheAuto extends OpMode
                 RcurrentTicks = -rightDrive.getCurrentPosition();
                 deltaTicksR = RcurrentTicks - prevTicksR;
                 deltaTicksL = LcurrentTicks - prevTicksL;
-                deltaTime = currentTime - prevTime;
+                //deltaTime = currentTime - prevTime;
                 manualVelocityL = deltaTicksL / deltaTime; // Ticks per second
                 manualVelocityR = deltaTicksR / deltaTime; // Ticks per second
     
@@ -255,7 +255,7 @@ public class TheAuto extends OpMode
                 thetaDotMR = (manualVelocityR)* TICKS_TO_MOTOR_RAD;    
                 prevTicksL = LcurrentTicks;
                 prevTicksR = RcurrentTicks;
-                prevTime = currentTime;
+                //prevTime = currentTime;
             // 5. Calculate error and total voltage
                 errorL    = targetThetaM - thetaML;
                 errorDotL = targetThetaDotM - thetaDotML;
