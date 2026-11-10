@@ -286,7 +286,7 @@ public class TheAuto extends OpMode
           void launch() {
             rightIntakeServo.setPower(1);
             launcher.setVelocity(LAUNCHER_TARGET_VELOCITY-67);
-            if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY)
+            if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY-67)
             {
                 intakePower += 0.5;
             } else {
