@@ -196,14 +196,14 @@ motorpowerL=drive(errorL,Kp,Kd,errorDotL,targetThetaDotM,B,batteryVoltage,A,targ
 motorpowerR=drive(errorR,Kp,Kd,errorDotR,targetThetaDotM,B,batteryVoltage,A,targetThetaDDotM,kS,VELOCITY_THRESHOLD,POSITION_DEADBAND);
 
 telemetry.addData("Motors", "left (%.2f), right (%.2f)", motorpowerL, motorpowerR);
-if(currentTime<5){
+if(currentTime>11 && currentTime<15){
 
-leftDrive.setPower(-motorpowerL);
-rightDrive.setPower(-motorpowerR);
+leftDrive.setPower(motorpowerL);
+rightDrive.setPower(motorpowerR);
 }
 leftDrive.setPower(0);
 rightDrive.setPower(0);
-if(currentTime>5 && currentTime<11){
+if(currentTime>15 && currentTime<28){
 
 batteryVoltage = hardwareMap.voltageSensor.iterator().next().getVoltage();
 LcurrentTicks = -leftDrive.getCurrentPosition();
@@ -272,7 +272,7 @@ rightDrive.setPower(motorpowerR);
 }
 //leftDrive.setPower(0);
 //rightDrive.setPower(0);
-if(currentTime>15 && currentTime<28){
+if(currentTime>5){
 rightIntakeServo.setPower(1);
 launch();
 }
