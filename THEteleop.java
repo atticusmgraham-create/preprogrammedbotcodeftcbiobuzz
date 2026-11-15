@@ -213,15 +213,24 @@ public class THEteleop extends OpMode {
          * change the intake power. So we need to give our launch function a chance to modify the
          * variable before we write it to our motor and servos.
          */
-        intake.setPower(intakePower);
-        leftIntakeServo.setPower(intakePower);
-        rightIntakeServo.setPower(intakePower);
-        if(gamepad1.y){
-           windmillServo.setPower(1);
+        if(gamepad1.a){        
+            intake.setPower(1);
+            leftIntakeServo.setPower(1);
+            windmillIntakeServo.setPower(-1);
+        }else if(gamepad1.b){
+            intake.setPower(-1);
+            leftIntakeServo.setPower(-1);
+            windmillIntakeServo.setPower(1);
         }
-        if(gamepad1.x){
-            windmillServo.setPower(-1);
+        if(gamepad1.y){
+          rightIntakeServo.setPower(1);
+        }
+        else if(gamepad1.x){
+            rightIntakeServo.setPower(-1);
 
+        }
+        else{
+            rightIntakeServo.setPower(0);
         }
     
         
