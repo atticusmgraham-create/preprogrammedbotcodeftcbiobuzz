@@ -272,7 +272,7 @@ rightDrive.setPower(motorpowerR);
 }
 //leftDrive.setPower(0);
 //rightDrive.setPower(0);
-if(currentTime>5){
+if(currentTime<5){
 rightIntakeServo.setPower(1);
 launch();
 }
