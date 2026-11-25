@@ -21,8 +21,7 @@
  */
 
 
-package org.firstinspires.ftc.teamcode;
-
+package org.firstinspires.ftc.teamcode;          
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -49,9 +48,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "DrivingOptimized", group = "StarterBot")
+@TeleOp(name = "finalteleop", group = "StarterBot")
 //@Disabled
-public class DrivingOptimized extends OpMode {
+public class finalteleop extends OpMode {
 
     // Declare OpMode members.
     private DcMotor leftDriveA = null;
@@ -95,7 +94,7 @@ public class DrivingOptimized extends OpMode {
     public void init() {
 
         /*
-         * Initialize the hardware variables. Note that the strings used here as parameters
+         * Initialize the hashould the rdware variables. Note that the strings used here as parameters
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
@@ -191,7 +190,7 @@ public class DrivingOptimized extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        arcadeDrive(gamepad1.left_stick_y,gamepad1.left_stick_x, gamepad1.left_trigger-gamepad1.right_trigger);
+        arcadeDrive(-gamepad1.left_stick_y,gamepad1.left_stick_x, gamepad1.left_trigger-gamepad1.right_trigger);
 
         /*
          * Set the intake power variable to equal the right trigger, minus the left trigger.
@@ -210,7 +209,7 @@ public class DrivingOptimized extends OpMode {
         /*
          * The launch() function handles setting motor velocity, and running the windmill servo
          * to feed the elements into the launcher wheel.
-         */
+         */ 
         launch();
 
         /*
@@ -234,13 +233,13 @@ public class DrivingOptimized extends OpMode {
             windmillServo.setPower(0);            
          }
          if(gamepad1.x){   
-            rightIntakeServo.setPower(1);
+                rightIntakeServo.setPower(1);
          }else if(gamepad1.y){
-            rightIntakeServo.setPower(-1);
+                rightIntakeServo.setPower(-1);
          }else{
-            rightIntakeServo.setPower(0);
+                rightIntakeServo.setPower(0);
          }
-        /*
+                 /*
          * Show motor powers on the Driver Station via telemetry.
          */
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
@@ -257,27 +256,36 @@ public class DrivingOptimized extends OpMode {
 
     void arcadeDrive(double forward, double side, double rotate) {
       if (rotate==0){
+        if(Math.abs(side)>0.05){
           leftPower = forward + side;
           rightPower = forward - side;
-  
+          leftDrive.setPower(leftPower);
+          leftDriveA.setPower(rightPower);
+          rightDrive.setPower(rightPower);
+          rightDriveA.setPower(leftPower);  
           /*
            * Send calculated power to motors
            */
-          leftDrive.setPower(leftPower);
-          rightDrive.setPower(leftPower);
-          leftDriveA.setPower(-rightPower);
-          rightDriveA.setPower(-rightPower);
+        }else{
+              leftPower=forward;
+              rightPower=forward;
+              leftDrive.setPower(leftPower);
+              rightDrive.setPower(leftPower);
+              leftDriveA.setPower(rightPower);
+              rightDriveA.setPower(rightPower);
+         }
       }else if (rotate!=0){
           leftPower = rotate;
-          rightPower = rotate;
+          rightPower = -rotate;
   
           /*
            * Send calculated power to motors
            */
-          leftDrive.setPower(leftPower);
-          rightDrive.setPower(leftPower);
-          leftDriveA.setPower(-rightPower);
-          rightDriveA.setPower(-rightPower);
+
+              leftDrive.setPower(leftPower);
+              rightDrive.setPower(leftPower);
+              leftDriveA.setPower(-rightPower);
+              rightDriveA.setPower(-rightPower);
       }else{
           leftDrive.setPower(0);
           rightDrive.setPower(0);
