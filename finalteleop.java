@@ -235,7 +235,7 @@ public class DrivingOptimized extends OpMode {
          }
          if(gamepad1.x){   
             rightIntakeServo.setPower(1);
-         else if(gamepad1.y){
+         }else if(gamepad1.y){
             rightIntakeServo.setPower(-1);
          }else{
             rightIntakeServo.setPower(0);
