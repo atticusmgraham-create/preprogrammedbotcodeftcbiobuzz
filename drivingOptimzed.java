@@ -198,7 +198,7 @@ public class DrivingOptimized extends OpMode {
          * allow us to avoid setting the same motors/servos power more than once per loop. That can
          * create erratic behavior.
          */
-        intakePower = gamepad1.right_stick_x-gamepad1.right_stick_y;
+        //intakePower = gamepad1.right_stick_x-gamepad1.right_stick_y;
 
         /*
          * The launch() function handles setting motor velocity, and running the windmill servo
@@ -213,10 +213,26 @@ public class DrivingOptimized extends OpMode {
          * change the intake power. So we need to give our launch function a chance to modify the
          * variable before we write it to our motor and servos.
          */
-        intake.setPower(intakePower);
-        leftIntakeServo.setPower(intakePower);
-        rightIntakeServo.setPower(intakePower);
-        windmillServo.setPower(intakePower);
+         if(gamepad1.a){
+            intake.setPower(1);
+            leftIntakeServo.setPower(-1);
+            windmillServo.setPower(1);
+         }else if(gamepad1.b){
+            intake.setPower(-1);
+            leftIntakeServo.setPower(1);
+            windmillServo.setPower(-1);
+         }else{
+            intake.setPower(0);
+            leftIntakeServo.setPower(0);
+            windmillServo.setPower(0);            
+         }
+         if(gamepad1.x){   
+            rightIntakeServo.setPower(1);
+         else if(gamepad1.y){
+            rightIntakeServo.setPower(-1);
+         }else{
+            rightIntakeServo.setPower(0);
+         }
         /*
          * Show motor powers on the Driver Station via telemetry.
          */
