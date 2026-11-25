@@ -268,7 +268,7 @@ public class DrivingOptimized extends OpMode {
           leftDriveA.setPower(-rightPower);
           rightDriveA.setPower(-rightPower);
       }else if (rotate!=0){
-          leftPower = -rotate;
+          leftPower = rotate;
           rightPower = rotate;
   
           /*
