@@ -62,6 +62,8 @@ double prevTicksL=0.0;
 double prevTicksR=0.0;
 double prevTicksLA=0.0;
 double prevTicksRA=0.0;
+double prevticksxodom=0.0;
+double prevticksyodom=0.0;
 double prevTime=0.0;
 double power=0.0;
 //start of moving
@@ -87,6 +89,8 @@ public void init() {
 * step.
 */
 */
+xodom=hardwareMap.get(DcMotor.class, "xodom");
+yodom=hardwareMap.get(DcMotor.class, "yodom");  
 leftDriveA = hardwareMap.get(DcMotor.class, "leftDriveA");
 rightDriveA = hardwareMap.get(DcMotor.class, "rightDriveA");
 leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
@@ -97,13 +101,9 @@ windmillServo = hardwareMap.get(CRServo.class, "windmill");
 leftIntakeServo = hardwareMap.get(CRServo.class, "left_intake_servo");
 rightIntakeServo = hardwareMap.get(CRServo.class, "right_intake_servo");
 
-/*
-* To drive forward, most robots need the motor on one side to be reversed,
-* because the axles point in opposite directions. Pushing the left stick forward
-* MUST make robot go forward. So adjust these two lines based on your first test drive.
-* Note: The settings here assume direct drive on left and right wheels. Gear
-* Reduction or 90 Deg drives may require direction flips
 
+xodom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+yodom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -126,6 +126,8 @@ rightDriveA.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 leftDrive.setDirection(DcMotor.Direction.REVERSE);
 rightDrive.setDirection(DcMotor.Direction.FORWARD);
+xodom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+yodom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 leftDriveA.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -174,17 +176,28 @@ long LcurrentTicks = leftDrive.getCurrentPosition();
 double currentTime = timer.seconds();
 long RcurrentTicks = rightDrive.getCurrentPosition();
 long LcurrentTicksA = leftDriveA.getCurrentPosition();
-
+long currentticksxodom=xodom.getCurrentPosition();
+long currentticksyodom=yodom.getCurrentPosition();
 long RcurrentTicksA = rightDriveA.getCurrentPosition();
 double deltaTicksR = RcurrentTicks - prevTicksR;
 double deltaTicksL = LcurrentTicks - prevTicksL;
 double deltaTicksRA = RcurrentTicksA - prevTicksRA;
 double deltaTicksLA = LcurrentTicksA - prevTicksLA;
+double deltaTicksxodom = currentticksxodom - prevticksxodom;
+double deltaTicksyodom = currentticksyodom - prevticksyodom;
 double deltaTime = currentTime - prevTime;
 double manualVelocityL = deltaTicksL / deltaTime; // Ticks per second
 double manualVelocityR = deltaTicksR / deltaTime; // Ticks per second
 double manualVelocityLA = deltaTicksLA / deltaTime; // Ticks per second
 double manualVelocityRA = deltaTicksRA / deltaTime; // Ticks per second
+double manualVelocityX = deltaTicksxodom / deltaTime; // Ticks per second
+double manualVelocityY= deltaTicksyodom / deltaTime; // Ticks per second
+prevTicksL = LcurrentTicks;
+prevTicksR = RcurrentTicks;
+prevTicksLA = LcurrentTicksA;
+prevTicksRA = RcurrentTicksA;
+prevticksyodom = currentticksyodom;
+prevticksxodom = currentticksxodom;
 if(currentTime<5){
 rightIntakeServo.setPower(1);
 launch();
@@ -261,7 +274,9 @@ double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double
   double u=kppos*errorpos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget;
   return u;
 }
-
+double divide(double n,double d){
+  return n/d; 
+}
 }
 }
 
