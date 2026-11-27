@@ -260,7 +260,7 @@ double getkpvelandkppos(double Acoeff,double input,double choice){
   }
   if(choice==0){
     return 4/input;
-  else if(choice==1){
+  }else if(choice==1){
     return Acoeff/(Math.max(input/16,0.1));
   }
 double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double kpy,double errorx,double errory){
