@@ -249,7 +249,7 @@ double getkpvelandkppos(double Acoeff,double input,double choice){
   else if(choice==1){
     return Acoeff/(Math.max(input/16,0.1));
   }
-double makepdfeedfoward(double kpposl,double errorpos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv){
+double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv){
   double direction=0.0;
   double m=10*(537.7/(96*Math.pi))
   if (Math.abs(vtarget) > 1e-4) {
