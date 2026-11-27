@@ -263,7 +263,7 @@ double getkpvelandkppos(double Acoeff,double input,double choice){
   else if(choice==1){
     return Acoeff/(Math.max(input/16,0.1));
   }
-double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv){
+double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double kpy,double errorx,double errory){
   double direction=0.0;
   double m=10*(537.7/(96*Math.pi))
   if (Math.abs(vtarget) > 1e-4) {
@@ -271,7 +271,7 @@ double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double
   } else if (Math.abs(errrorpos) > m) {
                 direction = Math.signum(errorpos);
   } 
-  double u=kppos*errorpos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget;
+  double u=kppos*errorpos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx+kpy*errory;
   return u;
 }
 double divide(double n,double d){
