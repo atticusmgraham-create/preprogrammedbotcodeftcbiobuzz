@@ -169,7 +169,7 @@ public void start() {
 }
 @Override
 public void loop() {
-double batteryVoltage = hardwareMap.voltageSensor.iterator().next().getVoltage();
+double bv = hardwareMap.voltageSensor.iterator().next().getVoltage();
 long LcurrentTicks = leftDrive.getCurrentPosition();
 double currentTime = timer.seconds();
 long RcurrentTicks = rightDrive.getCurrentPosition();
@@ -190,6 +190,7 @@ rightIntakeServo.setPower(1);
 launch();
 }
   
+double power = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
 
 }
 @Override
