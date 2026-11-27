@@ -66,6 +66,8 @@ double prevticksxodom=0.0;
 double prevticksyodom=0.0;
 double prevTime=0.0;
 double power=0.0;
+double kpvelocity=0.0;
+double kpposition=0.0;
 //start of moving
 
 
@@ -202,7 +204,8 @@ if(currentTime<5){
 rightIntakeServo.setPower(1);
 launch();
 }
-  
+kpposition=getkpvelandkppos(Amax,e,0);
+kpvelocity=getkpvelandkppos(Amax,e,1);
 double power = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
 
 }
