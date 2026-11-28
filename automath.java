@@ -211,6 +211,14 @@ double deltaTicksR = targetposA-RcurrentTicks;
 double deltaTicksL = targetpos-LcurrentTicks;
 double deltaTicksRA = targetpos-RcurrentTicksA;
 double deltaTicksLA = targetposA-LcurrentTicksA;
+double deltaTicksRact = RcurrentTicks-prevTicksR;
+double deltaTicksLact = LcurrentTicks-prevTicksL;
+double deltaTicksRAact = RcurrentTicksA-prevTicksRA;
+double deltaTicksLAact = LcurrentTicksA-prevTicksLA;
+double manualVelocityLact = deltaTicksLact / deltaTime; // Ticks per second
+double manualVelocityRact = deltaTicksRact / deltaTime; // Ticks per second
+double manualVelocityLAact = deltaTicksLAact / deltaTime; // Ticks per second
+double manualVelocityRAact = deltaTicksRAact / deltaTime; // Ticks per second
 double deltaTicksxodom = currentticksxodom - prevticksxodom;
 double deltaTicksyodom = currentticksyodom - prevticksyodom;
 double deltaTime = currentTime - prevTime;
@@ -254,10 +262,10 @@ launcher.setPower(0);
     kpvelocityD=getkpvelandkppos(0.67,tauD,1);
     kpodomD=(kpvelocityD/4)-kppositionD;
 
-    pidoutput=uk(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1.0,0.0,0.07,1.00,kpodom,deltaTicksxodom,deltaTicksyodom);
-    pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,1.0,0.0,0.07,1.00,kpodomB,deltaTicksxodom,deltaTicksyodom);
-    pidoutputC=uk(kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,1.0,0.0,0.07,1.00,kpodomC,deltaTicksxodom,deltaTicksyodom);
-    pidoutputD=uk(kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,1.0,0.0,0.07,1.00,kpodomD,deltaTicksxodom,deltaTicksyodom);
+    pidoutput=uk(manualVelocityLact,kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1.0,0.0,0.07,1.00,kpodom,deltaTicksxodom,deltaTicksyodom);
+    pidoutputB=uk(manualVelocityRact,kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,1.0,0.0,0.07,1.00,kpodomB,deltaTicksxodom,deltaTicksyodom);
+    pidoutputC=uk(manualVelocityLAact,kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,1.0,0.0,0.07,1.00,kpodomC,deltaTicksxodom,deltaTicksyodom);
+    pidoutputD=uk(manualVelocityRAact,kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,1.0,0.0,0.07,1.00,kpodomD,deltaTicksxodom,deltaTicksyodom);
 
     power = Math.max(-0.3, Math.min(0.3, pidoutput / bv));  
     powerB = Math.max(-0.3, Math.min(0.3, pidoutputB / bv));  
@@ -379,14 +387,14 @@ double getkpvelandkppos(double Acoeff,double inputd,double choice){
 }
 
 }
-double uk(double kppos,double epos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx,double errory){
+double uk(double kvd,double kppos,double epos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx,double errory){
   if(Math.abs(epos)<0.015 && Math.abs(errorvelocity)<0.05){
     return 0.0;
   }
   double kd=2*Math.sqrt(ka*kppos)-kv;
   double direction=Math.tanh(epos/0.02);
   double m=10*(537.7/(96*Math.PI));
-  double u=kppos*epos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx+kd*errorvelocity+kpx*errory;
+  double u=kppos*epos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx+kd*(-kvd)+kpx*errory;
   return u;
 }
 }
