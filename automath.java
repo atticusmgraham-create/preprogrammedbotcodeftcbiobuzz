@@ -68,6 +68,10 @@ double prevTime=0.0;
 double power=0.0;
 double kpvelocity=0.0;
 double kpposition=0.0;
+double tauA=0.0;
+double kpodom=0.0;
+double kvB=0.0;
+double ksB=0.0;
 //start of moving
 
 
@@ -204,8 +208,14 @@ if(currentTime<5){
 rightIntakeServo.setPower(1);
 launch();
 }
-kpposition=getkpvelandkppos(Amax,e,0);
-kpvelocity=getkpvelandkppos(Amax,e,1);
+tauA=func(deltaTicksL,2/3,1.0,1.5);
+kpposition=getkpvelandkppos(0.67,tauA,0);
+kpvelocity=getkpvelandkppos(0.67,tauA,1);
+kpodom=(kpvelocity/4)-kpposotion;
+kvB=1.00;
+ksB=0.07;
+kaB=0.67;
+pidoutput=makepdfeedforward(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1,1,0.07,kpodom,deltaTicksyodom);
 double power = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
 
 }
@@ -241,7 +251,7 @@ return arcDistanceMeters * SCRUB_FACTOR;
 }
 double radtodegrees(double rad){
     double rad_to_degrees=180/Math.PI
-    return rad*rad_to_degrees
+    return rad*rad_to_degrees;
 }
 double degreesToTurnTicks(double degrees) {
 double TICKS_PER_METER = TICKS_PER_REV / WHEEL_CIRCUMFERENCE_M; // ~1782.88 ticks/m
@@ -259,14 +269,14 @@ double func(double errorA,double mindistance,double mvel,double xaccel){
 }
 double getkpvelandkppos(double Acoeff,double input,double choice){
   if(input!=0){
-    return 0
+    return 0;
   }
   if(choice==0){
     return 4/input;
   }else if(choice==1){
     return Acoeff/(Math.max(input/16,0.1));
   }
-double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double kpy,double errorx,double errory){
+double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx){
   double direction=0.0;
   double m=10*(537.7/(96*Math.pi))
   if (Math.abs(vtarget) > 1e-4) {
@@ -274,11 +284,8 @@ double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double
   } else if (Math.abs(errrorpos) > m) {
                 direction = Math.signum(errorpos);
   } 
-  double u=kppos*errorpos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx+kpy*errory;
+  double u=kppos*errorpos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx;
   return u;
-}
-double divide(double n,double d){
-  return n/d; 
 }
 }
 }
