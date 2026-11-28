@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+MMMMMMMMMMMMMMMMMMMMMmmmmmmmmpackage org.firstinspires.ftc.teamcode;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -85,8 +85,8 @@ double kpvelocityB=0.0;
 double tauB=0.0;
 double kppositionC=0.0;
 double kpvelocityC=0.0;
-double targetpos=0.24384*TICKS_PER_METER;
-double targetposA=-0.24384*TICKS_PER_METER;
+double targetpos=500/TICKS_PER_METER;
+double targetposA=-500/TICKS_PER_METER;
 double targetposB=0.05*TICKS_PER_METER;
 double targetposAB=-0.05*TICKS_PER_METER;
 double tauC=0.0;
@@ -200,13 +200,13 @@ public void start() {
 @Override
 public void loop() {
 double bv = hardwareMap.voltageSensor.iterator().next().getVoltage();
-long LcurrentTicks = leftDrive.getCurrentPosition();
+long LcurrentTicks = leftDrive.getCurrentPosition()/TICKS_PER_METER;
 double currentTime = timer.seconds();
-long RcurrentTicks = rightDrive.getCurrentPosition();
-long LcurrentTicksA = leftDriveA.getCurrentPosition();
-long currentticksxodom=xdom.getCurrentPosition();
-long currentticksyodom=ydom.getCurrentPosition();
-long RcurrentTicksA = rightDriveA.getCurrentPosition();
+long RcurrentTicks = rightDrive.getCurrentPosition()/TICKS_PER_METER;
+long LcurrentTicksA = leftDriveA.getCurrentPosition()/TICKS_PER_METER;
+long currentticksxodom=xdom.getCurrentPosition()/TICKS_PER_METER;
+long currentticksyodom=ydom.getCurrentPosition()/TICKS_PER_METER;
+long RcurrentTicksA = rightDriveA.getCurrentPosition()/TICKS_PER_METER;
 double deltaTicksR = targetposA-RcurrentTicks;
 double deltaTicksL = targetpos-LcurrentTicks;
 double deltaTicksRA = targetpos-RcurrentTicksA;
