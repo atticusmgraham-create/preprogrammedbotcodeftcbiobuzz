@@ -85,7 +85,7 @@ double kpvelocityB=0.0;
 double tauB=0.0;
 double kppositionC=0.0;
 double kpvelocityC=0.0;
-double targetpos=0.2;
+double targetpos=1.2*TICKS_PER_METER;
 double tauC=0.0;
 double kppositionD=0.0;
 double kpvelocityD=0.0;
@@ -236,25 +236,14 @@ kpvelocityD=getkpvelandkppos(0.67,tauD,1);
 kpodomD=(kpvelocityD/4)-kppositionD;
 
 double pidoutput=uk(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1.0,0.0,0.07,1.00,kpodom,deltaTicksxodom);
-double pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,1.0,1.0,0.07,1.00,kpodomB,deltaTicksxodom);
-double pidoutputC=uk(kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,1.0,1.0,0.07,1.00,kpodomC,deltaTicksxodom);
-double pidoutputD=uk(kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,1.0,1.0,0.07,1.00,kpodomD,deltaTicksxodom);
-if(Math.abs(deltaTicksL)<0.005 && Math.abs(manualVelocityL)<0.02){
-   pidoutput=0;
-}
-if(Math.abs(deltaTicksR)<0.005 && Math.abs(manualVelocityR)<0.02){
-   pidoutputB=0;
-}
-if(Math.abs(deltaTicksLA)<0.005 && Math.abs(manualVelocityLA)<0.02){
-   pidoutputC=0;
-}
-if(Math.abs(deltaTicksRA)<0.005 && Math.abs(manualVelocityRA)<0.02){
-   pidoutputD=0;
-} 
-double power = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
-double powerB = Math.max(-1.0, Math.min(1.0, pidoutputB / bv));  
-double powerA = Math.max(-1.0, Math.min(1.0, pidoutputC / bv));  
-double powerC = Math.max(-1.0, Math.min(1.0, pidoutputD / bv));
+double pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,1.0,0.0,0.07,1.00,kpodomB,deltaTicksxodom);
+double pidoutputC=uk(kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,1.0,0.0,0.07,1.00,kpodomC,deltaTicksxodom);
+double pidoutputD=uk(kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,1.0,0.0,0.07,1.00,kpodomD,deltaTicksxodom);
+
+double power = Math.max(-0.3, Math.min(0.3, pidoutput / bv));  
+double powerB = Math.max(-0.3, Math.min(0.3, pidoutputB / bv));  
+double powerA = Math.max(-0.3, Math.min(0.3, pidoutputC / bv));  
+double powerC = Math.max(-0.3, Math.min(0.3, pidoutputD / bv));
   if(currentTime>5 && currentTime<10){
     leftDrive.setPower(power);
     leftDriveA.setPower(powerA);
@@ -273,6 +262,12 @@ double powerC = Math.max(-1.0, Math.min(1.0, pidoutputD / bv));
   prevticksyodom = currentticksyodom;
   prevticksxodom = currentticksxodom;
   prevTime=currentTime;
+  telemetry.addData("front motor right", RcurrentTicksA);
+  telemetry.addData("back motor left", LcurrentTicks);
+  telemetry.addData("front motor left", LcurrentTicksA);
+  telemetry.addData("back motors right", RcurrentTicks);
+  telemetry.update();
+  
 }
 @Override
 public void stop() {
@@ -329,16 +324,16 @@ double getkpvelandkppos(double Acoeff,double inputd,double choice){
     return 0;
   }
   if(choice==0){
-    return 4.0/Math.max(inputd,0.4);
+    return 4.0/Math.max(inputd,5.0);
   }else{
-    return Acoeff/(Math.max(inputd/16,0.1));
+    return Acoeff/(Math.max(inputd/16,4.0));
 }
 
 }
 double uk(double kppos,double epos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx){
   double direction=0.0;
   double m=10*(537.7/(96*Math.PI));
-  if (Math.abs(vtarget) > 1e-4) {
+  if (Math.abs(vtarget) > 0.05) {
                 direction = Math.signum(vtarget);
   } else if (Math.abs(epos) > m) {
                 direction = Math.signum(epos);
