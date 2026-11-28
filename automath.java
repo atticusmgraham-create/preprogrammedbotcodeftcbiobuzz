@@ -331,6 +331,9 @@ double getkpvelandkppos(double Acoeff,double inputd,double choice){
 
 }
 double uk(double kppos,double epos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx){
+  if(Math.abs(epos)<0.015 && Math.abs(errorvelocity)<0.05){
+    return 0.0;
+  }
   double direction=Math.tanh(epos/0.02);
   double m=10*(537.7/(96*Math.PI));
   double u=kppos*epos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx;
