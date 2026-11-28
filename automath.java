@@ -89,7 +89,6 @@ double targetpos=0.2;
 double tauC=0.0;
 double kppositionD=0.0;
 double kpvelocityD=0.0;
-double o=0.0;
 double tauD=0.0;
 //start of moving
 
@@ -240,14 +239,27 @@ double pidoutput=uk(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1.0,0
 double pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,1.0,1.0,0.07,1.00,kpodomB,deltaTicksxodom);
 double pidoutputC=uk(kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,1.0,1.0,0.07,1.00,kpodomC,deltaTicksxodom);
 double pidoutputD=uk(kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,1.0,1.0,0.07,1.00,kpodomD,deltaTicksxodom);
+if(Math.abs(deltaTicksL)<0.005 && Math.abs(manualVelocityL)<0.02){
+   pidoutput=0;
+}
+if(Math.abs(deltaTicksR)<0.005 && Math.abs(manualVelocityR)<0.02){
+   pidoutputB=0;
+}
+if(Math.abs(deltaTicksLA)<0.005 && Math.abs(manualVelocityLA)<0.02){
+   pidoutputC=0;
+}
+if(Math.abs(deltaTicksRA)<0.005 && Math.abs(manualVelocityRA)<0.02){
+   pidoutputD=0;
+} 
 double power = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
 double powerB = Math.max(-1.0, Math.min(1.0, pidoutputB / bv));  
- 
-  if(currentTime>5){
+double powerA = Math.max(-1.0, Math.min(1.0, pidoutputC / bv));  
+double powerC = Math.max(-1.0, Math.min(1.0, pidoutputD / bv));
+  if(currentTime>5 && currentTime<10){
     leftDrive.setPower(power);
-    leftDriveA.setPower(power);
-    rightDrive.setPower(power);
-    rightDriveA.setPower(power);
+    leftDriveA.setPower(powerA);
+    rightDrive.setPower(powerB);
+    rightDriveA.setPower(powerC);
   }else{
   leftDrive.setPower(0);
   leftDriveA.setPower(0);
