@@ -71,6 +71,9 @@ double power=0.0;
 
 double tauA=0.0;
 double kpodom=0.0;
+double kpodomB=0.0;
+double kpodomC=0.0;
+double kpodomD=0.0;
 double kvB=0.0;
 double ksB=0.0;
 double kpposition=0.0;
@@ -78,6 +81,16 @@ double kpvelocity=0.0;
 double kppositionB=0.0;
 double kpvelocityB=0.0;
 double tauB=0.0;
+double kppositionC=0.0;
+double kpvelocityC=0.0;
+double kppositionC=0.0;
+double kpvelocityC=0.0;
+double tauC=0.0;
+double kppositionD=0.0;
+double kpvelocityD=0.0;
+double kppositionD=0.0;
+double kpvelocityD=0.0;
+double tauD=0.0;
 //start of moving
 
 
@@ -219,9 +232,18 @@ kpodom=(kpvelocity/4)-kpposition;
 tauB=func(deltaTicksR,2.0/3.0,1.0,1.5);
 kppositionB=getkpvelandkppos(0.67,tauB,0);
 kpvelocityB=getkpvelandkppos(0.67,tauB,1);
-
+tauC=func(deltaTicksLA,2.0/3.0,1.0,1.5);
+kppositionC=getkpvelandkppos(0.67,tauC,0);
+kpvelocityC=getkpvelandkppos(0.67,tauC,1);
+kpodomC=(kpvelocityC/4)-kppositionC;
+tauD=func(deltaTicksRA,2.0/3.0,1.0,1.5);
+kppositionD=getkpvelandkppos(0.67,tauD,0);
+kpvelocityD=getkpvelandkppos(0.67,tauD,1);
+kpodomD=(kpvelocityD/4)-kppositionD;
 double pidoutput=uk(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,10.0,10.0,0.07,1.00,kpodom,deltaTicksxodom);
-double pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,10.0,10.0,0.07,1.00,kpodom,deltaTicksxodom);
+double pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,10.0,10.0,0.07,1.00,kpodomB,deltaTicksxodom);
+double pidoutput=uk(kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,10.0,10.0,0.07,1.00,kpodomC,deltaTicksxodom);
+double pidoutputB=uk(kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,10.0,10.0,0.07,1.00,kpodomD,deltaTicksxodom);
 double power = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
 double powerA = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
   if(currentTime>10 && currentTime<15){
