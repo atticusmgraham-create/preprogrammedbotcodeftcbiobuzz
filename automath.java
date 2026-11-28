@@ -22,6 +22,8 @@ public class shootandpark extends OpMode
 private ElapsedTime timer= new ElapsedTime();
 public final int LAUNCHER_TARGET_VELOCITY = 1250;
 public final int LAUNCHER_MIN_VELOCITY = 1200;
+private DcMotor xodom=null;
+private DcMotor yodom=null;
 private DcMotor leftDrive = null;
 private DcMotor leftDriveA=null;
 private DcMotor rightDriveA=null;
