@@ -22,8 +22,8 @@ public class shootandpark extends OpMode
 private ElapsedTime timer= new ElapsedTime();
 public final int LAUNCHER_TARGET_VELOCITY = 1250;
 public final int LAUNCHER_MIN_VELOCITY = 1200;
-private DcMotor xodom=null;
-private DcMotor yodom=null;
+private DcMotor xdom=null;
+private DcMotor ydom=null;
 private DcMotor leftDrive = null;
 private DcMotor leftDriveA=null;
 private DcMotor rightDriveA=null;
@@ -68,12 +68,16 @@ double prevticksxodom=0.0;
 double prevticksyodom=0.0;
 double prevTime=0.0;
 double power=0.0;
-double kpvelocity=0.0;
-double kpposition=0.0;
+
 double tauA=0.0;
 double kpodom=0.0;
 double kvB=0.0;
 double ksB=0.0;
+double kpposition=0.0;
+double kpvelocity=0.0;
+double kppositionB=0.0;
+double kpvelocityB=0.0;
+double tauB=0.0;
 //start of moving
 
 
@@ -91,14 +95,9 @@ double ksB=0.0;
 @Override
 public void init() {
 
-/*
-* Initialize the hardware variables. Note that the strings used here as parameters
-* to 'get' must correspond to the names assigned during the robot configuration
-* step.
-*/
-*/
-xodom=hardwareMap.get(DcMotor.class, "xodom");
-yodom=hardwareMap.get(DcMotor.class, "yodom");  
+
+xdom=hardwareMap.get(DcMotor.class, "xdom");
+ydom=hardwareMap.get(DcMotor.class, "ydom");  
 leftDriveA = hardwareMap.get(DcMotor.class, "leftDriveA");
 rightDriveA = hardwareMap.get(DcMotor.class, "rightDriveA");
 leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
@@ -110,8 +109,8 @@ leftIntakeServo = hardwareMap.get(CRServo.class, "left_intake_servo");
 rightIntakeServo = hardwareMap.get(CRServo.class, "right_intake_servo");
 
 
-xodom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-yodom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+xdom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+ydom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -134,8 +133,8 @@ rightDriveA.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 leftDrive.setDirection(DcMotor.Direction.REVERSE);
 rightDrive.setDirection(DcMotor.Direction.FORWARD);
-xodom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-yodom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+xdom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+ydom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 leftDriveA.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -184,8 +183,8 @@ long LcurrentTicks = leftDrive.getCurrentPosition();
 double currentTime = timer.seconds();
 long RcurrentTicks = rightDrive.getCurrentPosition();
 long LcurrentTicksA = leftDriveA.getCurrentPosition();
-long currentticksxodom=xodom.getCurrentPosition();
-long currentticksyodom=yodom.getCurrentPosition();
+long currentticksxodom=xdom.getCurrentPosition();
+long currentticksyodom=ydom.getCurrentPosition();
 long RcurrentTicksA = rightDriveA.getCurrentPosition();
 double deltaTicksR = RcurrentTicks - prevTicksR;
 double deltaTicksL = LcurrentTicks - prevTicksL;
@@ -206,20 +205,35 @@ prevTicksLA = LcurrentTicksA;
 prevTicksRA = RcurrentTicksA;
 prevticksyodom = currentticksyodom;
 prevticksxodom = currentticksxodom;
+
 if(currentTime<5){
 rightIntakeServo.setPower(1);
 launch();
 }
-tauA=func(deltaTicksL,2/3,1.0,1.5);
+rightIntakeServo.setPower(0);
+launcher.setPower(0);
+tauA=func(deltaTicksL,2.0/3.0,1.0,1.5);
 kpposition=getkpvelandkppos(0.67,tauA,0);
 kpvelocity=getkpvelandkppos(0.67,tauA,1);
-kpodom=(kpvelocity/4)-kpposotion;
-kvB=1.00;
-ksB=0.07;
-kaB=0.67;
-pidoutput=makepdfeedforward(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1,1,0.07,kpodom,deltaTicksyodom);
+kpodom=(kpvelocity/4)-kpposition;
+tauB=func(deltaTicksR,2.0/3.0,1.0,1.5);
+kppositionB=getkpvelandkppos(0.67,tauB,0);
+kpvelocityB=getkpvelandkppos(0.67,tauB,1);
+
+double pidoutput=uk(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,10.0,10.0,0.07,1.00,kpodom,deltaTicksxodom);
+double pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,10.0,10.0,0.07,1.00,kpodom,deltaTicksxodom);
 double power = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
-leftDrive.setPower(power);
+double powerA = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
+  if(currentTime>10 && currentTime<15){
+    leftDrive.setPower(-power);
+    leftDriveA.setPower(-power);
+    rightDrive.setPower(powerA);
+    rightDriveA.setPower(powerA);
+  }
+  leftDrive.setPower(0);
+  leftDriveA.setPower(0);
+  rightDrive.setPower(0);
+  rightDriveA.setPower(0);
 }
 @Override
 public void stop() {
@@ -252,7 +266,7 @@ double arcDistanceMeters = TURNING_RADIUS_M * thetaRadians;
 return arcDistanceMeters * SCRUB_FACTOR;
 }
 double radtodegrees(double rad){
-    double rad_to_degrees=180/Math.PI
+    double rad_to_degrees=180/Math.PI;
     return rad*rad_to_degrees;
 }
 double degreesToTurnTicks(double degrees) {
@@ -261,36 +275,38 @@ double meters = degreesToTurnMeters(degrees);
 return Math.round(meters * TICKS_PER_METER);
 }
 double func(double errorA,double mindistance,double mvel,double xaccel){
-  yb=((Math.abs(errorA)/mvel)+(mvel/xaccel)));
-  ya=2*Math.sqrt(Math.abs(errorA)/xaccel);
+  double yb=(Math.abs(errorA)/mvel)+(mvel/xaccel);
+  double ya=2*Math.sqrt(Math.abs(errorA)/xaccel);
   if(Math.abs(errorA)>mindistance){
     return yb;
   }else if (Math.abs(errorA)<=mindistance){
     return ya;
-    
+  }else{
+    return 0;
+  }  
 }
-double getkpvelandkppos(double Acoeff,double input,double choice){
-  if(input!=0){
+double getkpvelandkppos(double Acoeff,double inputd,double choice){
+  if(inputd==0){
     return 0;
   }
   if(choice==0){
-    return 4/input;
-  }else if(choice==1){
-    return Acoeff/(Math.max(input/16,0.1));
-  }
-double makepdfeedfoward(double kppos,double errorpos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx){
+    return 4/inputd;
+  }else{
+    return Acoeff/(Math.max(inputd/16,0.1));
+}
+
+
+}
+double uk(double kppos,double epos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx){
   double direction=0.0;
-  double m=10*(537.7/(96*Math.pi))
+  double m=10*(537.7/(96*Math.PI));
   if (Math.abs(vtarget) > 1e-4) {
                 direction = Math.signum(vtarget);
-  } else if (Math.abs(errrorpos) > m) {
-                direction = Math.signum(errorpos);
+  } else if (Math.abs(epos) > m) {
+                direction = Math.signum(epos);
   } 
-  double u=kppos*errorpos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx;
+  double u=kppos*epos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx;
   return u;
 }
 }
-}
 
-}
-}
