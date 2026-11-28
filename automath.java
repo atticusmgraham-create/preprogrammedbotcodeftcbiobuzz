@@ -85,11 +85,18 @@ double kpvelocityB=0.0;
 double tauB=0.0;
 double kppositionC=0.0;
 double kpvelocityC=0.0;
-double targetpos=1.2*TICKS_PER_METER;
+double targetpos=0.05*TICKS_PER_METER;
+double targetposA=-0.05*TICKS_PER_METER;
+double targetposB=0.05*TICKS_PER_METER;
+double targetposAB=-0.05*TICKS_PER_METER;
 double tauC=0.0;
 double kppositionD=0.0;
 double kpvelocityD=0.0;
 double tauD=0.0;
+double pidoutput=0.0;
+double pidoutputB=0.0;
+double pidoutputC=0.0;
+double pidoutputD=0.0;
 //start of moving
 
 
@@ -145,6 +152,8 @@ rightDriveA.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 leftDrive.setDirection(DcMotor.Direction.REVERSE);
 rightDrive.setDirection(DcMotor.Direction.FORWARD);
+leftDriveA.setDirection(DcMotor.Direction.REVERSE);
+rightDriveA.setDirection(DcMotor.Direction.FORWARD);
 xdom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 ydom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -198,10 +207,10 @@ long LcurrentTicksA = leftDriveA.getCurrentPosition();
 long currentticksxodom=xdom.getCurrentPosition();
 long currentticksyodom=ydom.getCurrentPosition();
 long RcurrentTicksA = rightDriveA.getCurrentPosition();
-double deltaTicksR = targetpos-RcurrentTicks;
+double deltaTicksR = targetposA-RcurrentTicks;
 double deltaTicksL = targetpos-LcurrentTicks;
 double deltaTicksRA = targetpos-RcurrentTicksA;
-double deltaTicksLA = targetpos-LcurrentTicksA;
+double deltaTicksLA = targetposA-LcurrentTicksA;
 double deltaTicksxodom = currentticksxodom - prevticksxodom;
 double deltaTicksyodom = currentticksyodom - prevticksyodom;
 double deltaTime = currentTime - prevTime;
@@ -211,6 +220,14 @@ double manualVelocityLA = deltaTicksLA / deltaTime; // Ticks per second
 double manualVelocityRA = deltaTicksRA / deltaTime; // Ticks per second
 double manualVelocityX = deltaTicksxodom / deltaTime; // Ticks per second
 double manualVelocityY= deltaTicksyodom / deltaTime; // Ticks per second
+double deltaTicksRB = targetposAB-RcurrentTicks;
+double deltaTicksLB = targetposB-LcurrentTicks;
+double deltaTicksRAB = targetposB-RcurrentTicksA;
+double deltaTicksLAB = targetposAB-LcurrentTicksA;
+double manualVelocityLB = deltaTicksLB / deltaTime; // Ticks per second
+double manualVelocityRB = deltaTicksRB / deltaTime; // Ticks per second
+double manualVelocityLAB = deltaTicksLAB / deltaTime; // Ticks per second
+double manualVelocityRAB = deltaTicksRAB / deltaTime; // Ticks per second
 
 
 if(currentTime<5){
@@ -219,41 +236,73 @@ if(currentTime<5){
 }
 rightIntakeServo.setPower(0);
 launcher.setPower(0);
-tauA=func(deltaTicksL,2.0/3.0,1.0,1.5);
-kpposition=getkpvelandkppos(0.67,tauA,0);
-kpvelocity=getkpvelandkppos(0.67,tauA,1);
-kpodom=(kpvelocity/4)-kpposition;
-tauB=func(deltaTicksR,2.0/3.0,1.0,1.5);
-kppositionB=getkpvelandkppos(0.67,tauB,0);
-kpvelocityB=getkpvelandkppos(0.67,tauB,1);
-tauC=func(deltaTicksLA,2.0/3.0,1.0,1.5);
-kppositionC=getkpvelandkppos(0.67,tauC,0);
-kpvelocityC=getkpvelandkppos(0.67,tauC,1);
-kpodomC=(kpvelocityC/4)-kppositionC;
-tauD=func(deltaTicksRA,2.0/3.0,1.0,1.5);
-kppositionD=getkpvelandkppos(0.67,tauD,0);
-kpvelocityD=getkpvelandkppos(0.67,tauD,1);
-kpodomD=(kpvelocityD/4)-kppositionD;
 
-double pidoutput=uk(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1.0,0.0,0.07,1.00,kpodom,deltaTicksxodom);
-double pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,1.0,0.0,0.07,1.00,kpodomB,deltaTicksxodom);
-double pidoutputC=uk(kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,1.0,0.0,0.07,1.00,kpodomC,deltaTicksxodom);
-double pidoutputD=uk(kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,1.0,0.0,0.07,1.00,kpodomD,deltaTicksxodom);
-
-double power = Math.max(-0.3, Math.min(0.3, pidoutput / bv));  
-double powerB = Math.max(-0.3, Math.min(0.3, pidoutputB / bv));  
-double powerA = Math.max(-0.3, Math.min(0.3, pidoutputC / bv));  
-double powerC = Math.max(-0.3, Math.min(0.3, pidoutputD / bv));
   if(currentTime>5 && currentTime<10){
+    tauA=func(deltaTicksL,2.0/3.0,1.0,1.5);
+    kpposition=getkpvelandkppos(0.67,tauA,0);
+    kpvelocity=getkpvelandkppos(0.67,tauA,1);
+    kpodom=(kpvelocity/4)-kpposition;
+    tauB=func(deltaTicksR,2.0/3.0,1.0,1.5);
+    kppositionB=getkpvelandkppos(0.67,tauB,0);
+    kpvelocityB=getkpvelandkppos(0.67,tauB,1);
+    tauC=func(deltaTicksLA,2.0/3.0,1.0,1.5);
+    kppositionC=getkpvelandkppos(0.67,tauC,0);
+    kpvelocityC=getkpvelandkppos(0.67,tauC,1);
+    kpodomC=(kpvelocityC/4)-kppositionC;
+    tauD=func(deltaTicksRA,2.0/3.0,1.0,1.5);
+    kppositionD=getkpvelandkppos(0.67,tauD,0);
+    kpvelocityD=getkpvelandkppos(0.67,tauD,1);
+    kpodomD=(kpvelocityD/4)-kppositionD;
+
+    pidoutput=uk(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1.0,0.0,0.07,1.00,kpodom,deltaTicksxodom,deltaTicksyodom);
+    pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,1.0,0.0,0.07,1.00,kpodomB,deltaTicksxodom,deltaTicksyodom);
+    pidoutputC=uk(kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,1.0,0.0,0.07,1.00,kpodomC,deltaTicksxodom,deltaTicksyodom);
+    pidoutputD=uk(kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,1.0,0.0,0.07,1.00,kpodomD,deltaTicksxodom,deltaTicksyodom);
+
+    power = Math.max(-0.3, Math.min(0.3, pidoutput / bv));  
+    powerB = Math.max(-0.3, Math.min(0.3, pidoutputB / bv));  
+    powerA = Math.max(-0.3, Math.min(0.3, pidoutputC / bv));  
+    powerC = Math.max(-0.3, Math.min(0.3, pidoutputD / bv));
+    leftDrive.setPower(power);
+    leftDriveA.setPower(powerA);
+    rightDrive.setPower(powerB);
+    rightDriveA.setPower(powerC);
+  }else if(0!=0){
+    tauA=func(deltaTicksL,729.0/1000.0,1.35,2.5);
+    kpposition=getkpvelandkppos(0.4,tauA,0);
+    kpvelocity=getkpvelandkppos(0.4,tauA,1);
+    kpodom=(kpvelocity/4)-kpposition;
+    tauB=func(deltaTicksR,729.0/1000.0,1.35,2.5);
+    kppositionB=getkpvelandkppos(0.4,tauB,0);
+    kpvelocityB=getkpvelandkppos(0.4,tauB,1);
+    tauC=func(deltaTicksLA,729.0/1000.0,1.35,2.5);
+    kppositionC=getkpvelandkppos(0.4,tauC,0);
+    kpvelocityC=getkpvelandkppos(0.4,tauC,1);
+    kpodomC=(kpvelocityC/4)-kppositionC;
+    tauD=func(deltaTicksRA,729.0/1000.0,1.35,2.5);
+    kppositionD=getkpvelandkppos(0.67,tauD,0);
+    kpvelocityD=getkpvelandkppos(0.67,tauD,1);
+    kpodomD=(kpvelocityD/4)-kppositionD;
+
+    pidoutput=uk(kpposition,deltaTicksLB,manualVelocityLB,kpvelocity,0.4,1.35,0.0,0.04,1.00,kpodom,deltaTicksxodom,deltaTicksyodom);
+    pidoutputB=uk(kppositionB,deltaTicksRB,manualVelocityRB,kpvelocityB,0.4,1.35,0.0,0.04,1.00,kpodomB,deltaTicksxodom,deltaTicksyodom);
+    pidoutputC=uk(kppositionC,deltaTicksLAB,manualVelocityLAB,kpvelocityC,0.4,1.35,0.0,0.04,1.00,kpodomC,deltaTicksxodom,deltaTicksyodom);
+    pidoutputD=uk(kppositionD,deltaTicksRAB,manualVelocityRAB,kpvelocityD,0.4,1.35,0.0,0.04,1.00,kpodomD,deltaTicksxodom,deltaTicksyodom);
+
+    power = Math.max(-0.3, Math.min(0.3, pidoutput / bv));  
+    powerB = Math.max(-0.3, Math.min(0.3, pidoutputB / bv));  
+    powerA = Math.max(-0.3, Math.min(0.3, pidoutputC / bv));  
+    powerC = Math.max(-0.3, Math.min(0.3, pidoutputD / bv));
+
     leftDrive.setPower(power);
     leftDriveA.setPower(powerA);
     rightDrive.setPower(powerB);
     rightDriveA.setPower(powerC);
   }else{
-  leftDrive.setPower(0);
-  leftDriveA.setPower(0);
-  rightDrive.setPower(0);
-  rightDriveA.setPower(0);
+    leftDrive.setPower(0);
+    leftDriveA.setPower(0);
+    rightDrive.setPower(0);
+    rightDriveA.setPower(0);
   }
   prevTicksL = LcurrentTicks;
   prevTicksR = RcurrentTicks;
@@ -330,13 +379,14 @@ double getkpvelandkppos(double Acoeff,double inputd,double choice){
 }
 
 }
-double uk(double kppos,double epos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx){
+double uk(double kppos,double epos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx,double errory){
   if(Math.abs(epos)<0.015 && Math.abs(errorvelocity)<0.05){
     return 0.0;
   }
+  double kd=2*Math.sqrt(ka*kppos)-kv;
   double direction=Math.tanh(epos/0.02);
   double m=10*(537.7/(96*Math.PI));
-  double u=kppos*epos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx;
+  double u=kppos*epos+kpvel*errorvelocity+ks*direction+kv*vtarget+ka*atarget+kpx*errorx+kd*errorvelocity+kpx*errory;
   return u;
 }
 }
