@@ -68,7 +68,9 @@ double prevticksxodom=0.0;
 double prevticksyodom=0.0;
 double prevTime=0.0;
 double power=0.0;
-
+double powerB=0.0;
+double powerA=0.0;
+double powerC=0.0;
 double tauA=0.0;
 double kpodom=0.0;
 double kpodomB=0.0;
@@ -83,13 +85,11 @@ double kpvelocityB=0.0;
 double tauB=0.0;
 double kppositionC=0.0;
 double kpvelocityC=0.0;
-double kppositionC=0.0;
-double kpvelocityC=0.0;
+double targetpos=0.2;
 double tauC=0.0;
 double kppositionD=0.0;
 double kpvelocityD=0.0;
-double kppositionD=0.0;
-double kpvelocityD=0.0;
+double o=0.0;
 double tauD=0.0;
 //start of moving
 
@@ -199,10 +199,10 @@ long LcurrentTicksA = leftDriveA.getCurrentPosition();
 long currentticksxodom=xdom.getCurrentPosition();
 long currentticksyodom=ydom.getCurrentPosition();
 long RcurrentTicksA = rightDriveA.getCurrentPosition();
-double deltaTicksR = RcurrentTicks - prevTicksR;
-double deltaTicksL = LcurrentTicks - prevTicksL;
-double deltaTicksRA = RcurrentTicksA - prevTicksRA;
-double deltaTicksLA = LcurrentTicksA - prevTicksLA;
+double deltaTicksR = targetpos-RcurrentTicks;
+double deltaTicksL = targetpos-LcurrentTicks;
+double deltaTicksRA = targetpos-RcurrentTicksA;
+double deltaTicksLA = targetpos-LcurrentTicksA;
 double deltaTicksxodom = currentticksxodom - prevticksxodom;
 double deltaTicksyodom = currentticksyodom - prevticksyodom;
 double deltaTime = currentTime - prevTime;
@@ -212,16 +212,11 @@ double manualVelocityLA = deltaTicksLA / deltaTime; // Ticks per second
 double manualVelocityRA = deltaTicksRA / deltaTime; // Ticks per second
 double manualVelocityX = deltaTicksxodom / deltaTime; // Ticks per second
 double manualVelocityY= deltaTicksyodom / deltaTime; // Ticks per second
-prevTicksL = LcurrentTicks;
-prevTicksR = RcurrentTicks;
-prevTicksLA = LcurrentTicksA;
-prevTicksRA = RcurrentTicksA;
-prevticksyodom = currentticksyodom;
-prevticksxodom = currentticksxodom;
+
 
 if(currentTime<5){
-rightIntakeServo.setPower(1);
-launch();
+//rightIntakeServo.setPower(1);
+//launch();
 }
 rightIntakeServo.setPower(0);
 launcher.setPower(0);
@@ -240,22 +235,32 @@ tauD=func(deltaTicksRA,2.0/3.0,1.0,1.5);
 kppositionD=getkpvelandkppos(0.67,tauD,0);
 kpvelocityD=getkpvelandkppos(0.67,tauD,1);
 kpodomD=(kpvelocityD/4)-kppositionD;
-double pidoutput=uk(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,10.0,10.0,0.07,1.00,kpodom,deltaTicksxodom);
-double pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,10.0,10.0,0.07,1.00,kpodomB,deltaTicksxodom);
-double pidoutput=uk(kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,10.0,10.0,0.07,1.00,kpodomC,deltaTicksxodom);
-double pidoutputB=uk(kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,10.0,10.0,0.07,1.00,kpodomD,deltaTicksxodom);
+
+double pidoutput=uk(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1.0,0.0,0.07,1.00,kpodom,deltaTicksxodom);
+double pidoutputB=uk(kppositionB,deltaTicksR,manualVelocityR,kpvelocityB,0.67,1.0,1.0,0.07,1.00,kpodomB,deltaTicksxodom);
+double pidoutputC=uk(kppositionC,deltaTicksLA,manualVelocityLA,kpvelocityC,0.67,1.0,1.0,0.07,1.00,kpodomC,deltaTicksxodom);
+double pidoutputD=uk(kppositionD,deltaTicksRA,manualVelocityRA,kpvelocityD,0.67,1.0,1.0,0.07,1.00,kpodomD,deltaTicksxodom);
 double power = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
-double powerA = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
-  if(currentTime>10 && currentTime<15){
-    leftDrive.setPower(-power);
-    leftDriveA.setPower(-power);
-    rightDrive.setPower(powerA);
-    rightDriveA.setPower(powerA);
-  }
+double powerB = Math.max(-1.0, Math.min(1.0, pidoutputB / bv));  
+ 
+  if(currentTime>5){
+    leftDrive.setPower(power);
+    leftDriveA.setPower(power);
+    rightDrive.setPower(power);
+    rightDriveA.setPower(power);
+  }else{
   leftDrive.setPower(0);
   leftDriveA.setPower(0);
   rightDrive.setPower(0);
   rightDriveA.setPower(0);
+  }
+  prevTicksL = LcurrentTicks;
+  prevTicksR = RcurrentTicks;
+  prevTicksLA = LcurrentTicksA;
+  prevTicksRA = RcurrentTicksA;
+  prevticksyodom = currentticksyodom;
+  prevticksxodom = currentticksxodom;
+  prevTime=currentTime;
 }
 @Override
 public void stop() {
@@ -317,7 +322,6 @@ double getkpvelandkppos(double Acoeff,double inputd,double choice){
     return Acoeff/(Math.max(inputd/16,0.1));
 }
 
-
 }
 double uk(double kppos,double epos,double errorvelocity,double kpvel,double ka,double atarget,double vtarget,double ks,double kv,double kpx,double errorx){
   double direction=0.0;
@@ -331,4 +335,3 @@ double uk(double kppos,double epos,double errorvelocity,double kpvel,double ka,d
   return u;
 }
 }
-
