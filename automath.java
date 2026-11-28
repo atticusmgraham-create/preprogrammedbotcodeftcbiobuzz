@@ -217,7 +217,7 @@ ksB=0.07;
 kaB=0.67;
 pidoutput=makepdfeedforward(kpposition,deltaTicksL,manualVelocityL,kpvelocity,0.67,1,1,0.07,kpodom,deltaTicksyodom);
 double power = Math.max(-1.0, Math.min(1.0, pidoutput / bv));  
-
+leftDrive.setPower(power);
 }
 @Override
 public void stop() {
