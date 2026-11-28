@@ -317,7 +317,7 @@ double getkpvelandkppos(double Acoeff,double inputd,double choice){
     return 0;
   }
   if(choice==0){
-    return 4/inputd;
+    return 4.0/Math.max(inputd,0.4);
   }else{
     return Acoeff/(Math.max(inputd/16,0.1));
 }
